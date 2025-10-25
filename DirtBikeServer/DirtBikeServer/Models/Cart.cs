@@ -1,5 +1,5 @@
 ﻿namespace DirtBikeServer.Models {
-    public class Park {
+    public class Cart {
         public int Id { get; set; }
     }
 }
