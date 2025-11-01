@@ -13,27 +13,27 @@ namespace DirtBikeServer.Controllers {
         public async Task<IActionResult> AddPark([FromQuery] Park park)
             => Ok(await _service.AddPark(park));
 
-        [HttpDelete("{parkId:int}")]
-        public async Task<IActionResult> RemovePark([FromQuery] int parkId)
+        [HttpDelete("{parkId:Guid}")]
+        public async Task<IActionResult> RemovePark([FromQuery] Guid parkId)
             => Ok(await _service.RemovePark(parkId));
 
-        [HttpGet("{parkId:int}")]
-        public async Task<IActionResult> GetPark([FromQuery] int parkId)
+        [HttpGet("{parkId:Guid}")]
+        public async Task<IActionResult> GetPark([FromQuery] Guid parkId)
             => Ok(await _service.GetPark(parkId));
 
         [HttpGet]
         public async Task<IActionResult> GetParks()
             => Ok(await _service.GetParks());
 
-        [HttpPost("{parkId:int}/guests")]
+        [HttpPost("{parkId:Guid}/guests")]
         public async Task<IActionResult> AddGuestLimitToPark([FromQuery] Park park, int numberOfGuests)
             => Ok(await _service.AddGuestLimitToPark(park, numberOfGuests));
         
-        [HttpDelete("{parkId:int}/guests")]
+        [HttpDelete("{parkId:Guid}/guests")]
         public async Task<IActionResult> RemoveGuestsFromPark([FromQuery] Park park, int numberOfGuests)
             => Ok(await _service.RemoveGuestsFromPark(park, numberOfGuests));
 
-        [HttpPut("{parkId:int}")]
+        [HttpPut("{parkId:Guid}")]
         public async Task<IActionResult> EditPark([FromQuery] Park park, Park newPark)
             => Ok(await _service.EditPark(park, newPark));
 

@@ -19,7 +19,7 @@ namespace DirtBikeServer.Services {
             throw new NotImplementedException();
         }
 
-        public Task<Park> GetPark(int parkId) {
+        public Task<Park> GetPark(Guid parkId) {
             throw new NotImplementedException();
         }
 
@@ -31,7 +31,7 @@ namespace DirtBikeServer.Services {
             throw new NotImplementedException();
         }
 
-        public Task<bool> RemovePark(int parkId) {
+        public Task<bool> RemovePark(Guid parkId) {
             throw new NotImplementedException();
         }
     }

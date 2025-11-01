@@ -7,7 +7,7 @@ namespace DirtBikeServer.Services {
         private readonly DirtBikeDbContext _context;
         public BookingService(DirtBikeDbContext context) => _context = context;
 
-        public Task<Booking> GetBooking(int parkId) {
+        public Task<Booking> GetBooking(Guid parkId) {
             throw new NotImplementedException();
         }
 
@@ -15,11 +15,11 @@ namespace DirtBikeServer.Services {
             throw new NotImplementedException();
         }
 
-        public Task<bool> RemoveBooking(int bookingId) {
+        public Task<bool> RemoveBooking(Guid bookingId) {
             throw new NotImplementedException();
         }
 
-        public Task<bool> CreateBooking(int parkId) {
+        public Task<bool> CreateBooking(Guid parkId) {
             throw new NotImplementedException();
         }
     }

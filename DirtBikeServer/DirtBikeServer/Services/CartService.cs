@@ -7,11 +7,11 @@ namespace DirtBikeServer.Services {
         private readonly DirtBikeDbContext _context;
         public CartService(DirtBikeDbContext context) => _context = context;
 
-        public Task<bool> AddBookingToCart(int cartId, int parkId, Booking bookingInfo) {
+        public Task<bool> AddBookingToCart(Guid cartId, Guid parkId, Booking bookingInfo) {
             throw new NotImplementedException();
         }
 
-        public Task<Cart> GetCart(int cartId) {
+        public Task<Cart> GetCart(Guid cartId) {
             throw new NotImplementedException();
         }
 
@@ -19,11 +19,11 @@ namespace DirtBikeServer.Services {
             throw new NotImplementedException();
         }
 
-        public Task<bool> ProcessPayment(int cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc) {
+        public Task<bool> ProcessPayment(Guid cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc) {
             throw new NotImplementedException();
         }
 
-        public Task<Cart> RemoveBookingFromCart(int cartId, int bookingId) {
+        public Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId) {
             throw new NotImplementedException();
         }
     }

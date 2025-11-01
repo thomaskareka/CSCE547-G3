@@ -2,10 +2,10 @@
 
 namespace DirtBikeServer.Interfaces {
     public interface ICartService {
-        Task<bool> AddBookingToCart(int cartId, int parkId, Booking bookingInfo);
-        Task<Cart> RemoveBookingFromCart(int cartId, int bookingId);
-        Task<Cart> GetCart(int cartId);
+        Task<bool> AddBookingToCart(Guid cartId, Guid parkId, Booking bookingInfo);
+        Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId);
+        Task<Cart> GetCart(Guid cartId);
         Task<Cart> GetCart();
-        Task<bool> ProcessPayment(int cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc);
+        Task<bool> ProcessPayment(Guid cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc);
     }
 }

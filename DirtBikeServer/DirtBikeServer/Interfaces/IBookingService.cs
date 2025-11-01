@@ -2,9 +2,9 @@
 
 namespace DirtBikeServer.Interfaces {
     public interface IBookingService {
-        Task<Booking> GetBooking(int parkId);
+        Task<Booking> GetBooking(Guid parkId);
         Task<List<Booking>> GetBookings();
-        Task<bool> RemoveBooking(int bookingId);
-        Task<bool> CreateBooking(int parkId);
+        Task<bool> RemoveBooking(Guid bookingId);
+        Task<bool> CreateBooking(Guid parkId);
     }
 }
