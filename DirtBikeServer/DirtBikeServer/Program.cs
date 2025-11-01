@@ -27,6 +27,10 @@ namespace DirtBikeServer
                 options.UseLazyLoadingProxies()
                     .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<IParkRepository, ParkRepository>();
+
             builder.Services.AddScoped<IBookingService, BookingService>();
             builder.Services.AddScoped<ICartService, CartService>();
             builder.Services.AddScoped<IParkService, ParkService>();

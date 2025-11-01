@@ -4,8 +4,8 @@ using DirtBikeServer.Models;
 
 namespace DirtBikeServer.Services {
     public class BookingService: IBookingService {
-        private readonly DirtBikeDbContext _context;
-        public BookingService(DirtBikeDbContext context) => _context = context;
+        private readonly IBookingRepository _repository;
+        public BookingService(IBookingRepository repository) => _repository = repository;
 
         public Task<Booking> GetBooking(Guid parkId) {
             throw new NotImplementedException();

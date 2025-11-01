@@ -4,8 +4,8 @@ using DirtBikeServer.Models;
 
 namespace DirtBikeServer.Services {
     public class CartService : ICartService {
-        private readonly DirtBikeDbContext _context;
-        public CartService(DirtBikeDbContext context) => _context = context;
+        private readonly ICartRepository _repository;
+        public CartService(ICartRepository repository) => _repository = repository;
 
         public Task<bool> AddBookingToCart(Guid cartId, Guid parkId, Booking bookingInfo) {
             throw new NotImplementedException();
