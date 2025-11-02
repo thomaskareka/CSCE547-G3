@@ -7,7 +7,7 @@ namespace DirtBikeServer.Services {
         private readonly IParkRepository _repository;
         public ParkService(IParkRepository repository) => _repository = repository;
 
-        public Task<bool> AddGuestLimitToPark(Park park, int numberOfGuests) {
+        public Task<bool> AddGuestLimitToPark(Guid parkId, int numberOfGuests) {
             throw new NotImplementedException();
         }
 
@@ -15,24 +15,24 @@ namespace DirtBikeServer.Services {
             return await _repository.AddParkAsync(park);
         }
 
-        public Task<bool> EditPark(Park park, Park newPark) {
+        public Task<bool> EditPark(Guid parkId, Park newPark) {
             throw new NotImplementedException();
         }
 
-        public Task<Park> GetPark(Guid parkId) {
-            throw new NotImplementedException();
+        public async Task<Park?> GetPark(Guid parkId) {
+            return await _repository.GetParkFromIdAsync(parkId);
         }
 
         public async Task<List<Park>> GetParks() {
             return await _repository.GetParksAsync();
         }
 
-        public Task<bool> RemoveGuestsFromPark(Park park, int numberOfGuests) {
+        public Task<bool> RemoveGuestsFromPark(Guid parkId, int numberOfGuests) {
             throw new NotImplementedException();
         }
 
-        public Task<bool> RemovePark(Guid parkId) {
-            throw new NotImplementedException();
+        public async Task<bool> RemovePark(Guid parkId) {
+            return await _repository.DeleteParkFromIdAsync(parkId);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using DirtBikeServer.Interfaces;
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
 using DirtBikeServer.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,32 +11,32 @@ namespace DirtBikeServer.Controllers {
         public ParkController(IParkService service) => _service = service;
 
         [HttpPost]
-        public async Task<IActionResult> AddPark([FromQuery] Park park)
+        public async Task<IActionResult> AddPark([FromBody] Park park)
             => Ok(await _service.AddPark(park));
 
         [HttpDelete("{parkId:Guid}")]
-        public async Task<IActionResult> RemovePark([FromQuery] Guid parkId)
+        public async Task<IActionResult> RemovePark([FromRoute] Guid parkId)
             => Ok(await _service.RemovePark(parkId));
 
         [HttpGet("{parkId:Guid}")]
-        public async Task<IActionResult> GetPark([FromQuery] Guid parkId)
+        public async Task<IActionResult> GetPark([FromRoute] Guid parkId)
             => Ok(await _service.GetPark(parkId));
 
         [HttpGet]
         public async Task<IActionResult> GetParks()
             => Ok(await _service.GetParks());
 
-        [HttpPost("{parkId:Guid}/guests")]
-        public async Task<IActionResult> AddGuestLimitToPark([FromQuery] Park park, int numberOfGuests)
-            => Ok(await _service.AddGuestLimitToPark(park, numberOfGuests));
+        [HttpPost("/guests")]
+        public async Task<IActionResult> AddGuestLimitToPark([FromBody] ParkDTOs.GuestDTO dto)
+            => Ok(await _service.AddGuestLimitToPark(dto.ParkId, dto.NumberOfGuests));
         
-        [HttpDelete("{parkId:Guid}/guests")]
-        public async Task<IActionResult> RemoveGuestsFromPark([FromQuery] Park park, int numberOfGuests)
-            => Ok(await _service.RemoveGuestsFromPark(park, numberOfGuests));
+        [HttpDelete("/guests")]
+        public async Task<IActionResult> RemoveGuestsFromPark([FromBody] ParkDTOs.GuestDTO dto)
+            => Ok(await _service.RemoveGuestsFromPark(dto.ParkId, dto.NumberOfGuests));
 
-        [HttpPut("{parkId:Guid}")]
-        public async Task<IActionResult> EditPark([FromQuery] Park park, Park newPark)
-            => Ok(await _service.EditPark(park, newPark));
+        [HttpPut("edit/{parkId:Guid}")]
+        public async Task<IActionResult> EditPark([FromRoute] Guid parkId, [FromBody] Park newPark)
+            => Ok(await _service.EditPark(parkId, newPark));
 
 
     }

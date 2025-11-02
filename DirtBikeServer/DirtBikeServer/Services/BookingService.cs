@@ -7,20 +7,20 @@ namespace DirtBikeServer.Services {
         private readonly IBookingRepository _repository;
         public BookingService(IBookingRepository repository) => _repository = repository;
 
-        public Task<Booking> GetBooking(Guid parkId) {
-            throw new NotImplementedException();
+        public async Task<Booking?> GetBooking(Guid bookingId) {
+            return await _repository.GetBookingFromIdAsync(bookingId);
         }
 
-        public Task<List<Booking>> GetBookings() {
-            throw new NotImplementedException();
+        public async Task<List<Booking>> GetBookings() {
+            return await _repository.GetBookingsAsync();
         }
 
-        public Task<bool> RemoveBooking(Guid bookingId) {
-            throw new NotImplementedException();
+        public async Task<bool> RemoveBooking(Guid bookingId) {
+            return await _repository.DeleteBookingFromIdAsync(bookingId);
         }
 
-        public Task<bool> CreateBooking(Guid parkId) {
-            throw new NotImplementedException();
+        public async Task<bool> CreateBooking(Booking booking) {
+            return await _repository.AddBookingAsync(booking);
         }
     }
 }

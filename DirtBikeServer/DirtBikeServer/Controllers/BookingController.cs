@@ -1,4 +1,5 @@
 ﻿using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
 using Microsoft.AspNetCore.Mvc;
 namespace DirtBikeServer.Controllers {
     [ApiController]
@@ -8,7 +9,7 @@ namespace DirtBikeServer.Controllers {
         public BookingController(IBookingService service) => _service = service;
 
         [HttpGet("{bookingId:Guid}")]
-        public async Task<IActionResult> GetBooking([FromQuery] Guid bookingId)
+        public async Task<IActionResult> GetBooking([FromRoute] Guid bookingId)
             => Ok(await _service.GetBooking(bookingId));
 
         [HttpGet]
@@ -16,11 +17,11 @@ namespace DirtBikeServer.Controllers {
             => Ok(await _service.GetBookings());
 
         [HttpDelete("{bookingId:Guid}")]
-        public async Task<IActionResult> RemoveBooking([FromQuery] Guid bookingid)
-          => Ok(await _service.RemoveBooking(bookingid));
+        public async Task<IActionResult> RemoveBooking([FromRoute] Guid bookingId)
+          => Ok(await _service.RemoveBooking(bookingId));
 
         [HttpPost("{bookingId:Guid}")]
-        public async Task<IActionResult> CreateBooking([FromQuery] Guid bookingid)
-            => Ok(await _service.CreateBooking(bookingid));
+        public async Task<IActionResult> CreateBooking([FromBody] Booking booking)
+            => Ok(await _service.CreateBooking(booking));
     }
 }

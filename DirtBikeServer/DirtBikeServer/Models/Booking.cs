@@ -1,6 +1,6 @@
 ﻿namespace DirtBikeServer.Models {
     public class Booking {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public Guid ParkId { get; set; }
         public virtual Park? Park { get; set; }
         public int Adults { get; set; }
