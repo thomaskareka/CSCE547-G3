@@ -11,7 +11,7 @@ namespace DirtBikeServer.Controllers {
         public CartController(ICartService service) => _service = service;
 
         [HttpPost("/add_booking")]
-        public async Task<IActionResult> AddBookingToCart([FromBody] CartDTOs.CreateBookingDTO dto)
+        public async Task<IActionResult> AddBookingToCart([FromBody] CartDTOs.CreateCartBookingDTO dto)
           => Ok(await _service.AddBookingToCart(dto.CartId, dto.ParkId, dto.BookingInfo));
 
         [HttpPut("/remove_booking")]

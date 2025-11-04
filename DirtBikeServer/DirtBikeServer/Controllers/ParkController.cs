@@ -11,8 +11,8 @@ namespace DirtBikeServer.Controllers {
         public ParkController(IParkService service) => _service = service;
 
         [HttpPost]
-        public async Task<IActionResult> AddPark([FromBody] Park park)
-            => Ok(await _service.AddPark(park));
+        public async Task<IActionResult> AddPark([FromBody] ParkDTOs.CreateParkDTO park)
+            => Ok(await _service.AddPark(park.Name, park.Location, park.Description));
 
         [HttpDelete("{parkId:Guid}")]
         public async Task<IActionResult> RemovePark([FromRoute] Guid parkId)

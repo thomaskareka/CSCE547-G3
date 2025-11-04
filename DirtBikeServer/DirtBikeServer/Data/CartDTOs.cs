@@ -2,7 +2,7 @@
 
 namespace DirtBikeServer.Data {
     public class CartDTOs {
-        public class CreateBookingDTO {
+        public class CreateCartBookingDTO {
             public Guid CartId { get; set; }
             public Guid ParkId { get; set; }
             public required Booking BookingInfo { get; set; }

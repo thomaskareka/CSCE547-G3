@@ -5,6 +5,6 @@ namespace DirtBikeServer.Interfaces {
         Task<Booking?> GetBooking(Guid parkId);
         Task<List<Booking>> GetBookings();
         Task<bool> RemoveBooking(Guid bookingId);
-        Task<bool> CreateBooking(Booking booking);
+        Task<bool> CreateBooking(Guid parkId, int adults, int children, Guid? cartId);
     }
 }

@@ -11,7 +11,12 @@ namespace DirtBikeServer.Services {
             throw new NotImplementedException();
         }
 
-        public async Task<bool> AddPark(Park park) {
+        public async Task<bool> AddPark(string name, string location, string? description) {
+            var park = new Park {
+                Name = name,
+                Location = location,
+                Description = description
+            };
             return await _repository.AddParkAsync(park);
         }
 

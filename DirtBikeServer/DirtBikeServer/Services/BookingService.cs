@@ -19,7 +19,13 @@ namespace DirtBikeServer.Services {
             return await _repository.DeleteBookingFromIdAsync(bookingId);
         }
 
-        public async Task<bool> CreateBooking(Booking booking) {
+        public async Task<bool> CreateBooking(Guid parkId, int adults, int children, Guid? cartId) {
+            var booking = new Booking {
+                ParkId = parkId,
+                Adults = adults,
+                Children = children,
+                CartID = cartId
+            };
             return await _repository.AddBookingAsync(booking);
         }
     }
