@@ -8,6 +8,12 @@ namespace DirtBikeServer.Data {
             public required Booking BookingInfo { get; set; }
         }
 
+        public class CartResponseDTO {
+
+            public Cart? OutCart { get; set; }
+            public Guid Id { get; set; }
+        }
+
         public class RemoveBookingDTO {
             public Guid CartId { get; set; }
             public Guid BookingId { get; set; }
