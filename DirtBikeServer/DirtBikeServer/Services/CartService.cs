@@ -60,8 +60,20 @@ namespace DirtBikeServer.Services {
             throw new NotImplementedException();
         }
 
-        public Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId) {
-            throw new NotImplementedException();
+        public async Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId) {
+            var cart = await _repository.GetCartAsync(cartId);
+            if (cart == null)
+                throw new DirectoryNotFoundException();
+
+            var booking = cart.Items.FirstOrDefault(b => b.Id == bookingId);
+
+            if (booking == null)
+                return cart;
+
+            var success = await _repository.RemoveBookingAsync(cart, booking);
+
+            return cart;
+                
         }
     }
 }

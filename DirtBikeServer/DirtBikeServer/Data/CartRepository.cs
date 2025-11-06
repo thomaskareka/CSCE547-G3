@@ -26,6 +26,12 @@ namespace DirtBikeServer.Data {
             return await query.FirstOrDefaultAsync();
         }
 
+        public async Task<bool> RemoveBookingAsync(Cart cart, Booking booking) {
+            cart.Items.Remove(booking);
+            _context.Bookings.Remove(booking);
+            return await SaveCartsAsync();
+        }
+
         public async Task<bool> SaveCartsAsync() {
             return await _context.SaveChangesAsync() > 0;
         }

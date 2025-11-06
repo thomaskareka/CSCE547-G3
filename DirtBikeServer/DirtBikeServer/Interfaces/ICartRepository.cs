@@ -6,5 +6,6 @@ namespace DirtBikeServer.Interfaces {
         Task<bool> CreateCartAsync(Cart cartId);
 
         Task<bool> AddBookingAsync(Cart cart, Booking booking);
+        Task<bool> RemoveBookingAsync(Cart cart, Booking booking);
     }
 }
