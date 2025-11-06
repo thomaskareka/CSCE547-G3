@@ -7,5 +7,10 @@ namespace DirtBikeServer.Data {
             public int Children { get; set; }
             public Guid? CartId { get; set; }
         }
+
+        public class BookingInfoDTO {
+            public int Adults { get; set; }
+            public int Children { get; set; }
+        }
     }
 }
