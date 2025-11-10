@@ -1,0 +1,1031 @@
+using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Services;
+using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
+
+namespace DirtBikeServer
+{
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
+
+            // Add services to the container.
+
+            builder.Services.AddControllers();
+            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+            builder.Services.AddOpenApi();
+
+           //swagger
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen();
+
+            // dirt bike project services
+            builder.Services.AddDbContext<DirtBikeDbContext>(options =>
+                options.UseLazyLoadingProxies()
+                    .UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+            builder.Services.AddScoped<IBookingRepository, BookingRepository>();
+            builder.Services.AddScoped<ICartRepository, CartRepository>();
+            builder.Services.AddScoped<IParkRepository, ParkRepository>();
+
+            builder.Services.AddScoped<IBookingService, BookingService>();
+            builder.Services.AddScoped<ICartService, CartService>();
+            builder.Services.AddScoped<IParkService, ParkService>();
+
+            builder.Services.AddControllers().AddJsonOptions(o =>
+                o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
+
+            var app = builder.Build();
+
+            // Configure the HTTP request pipeline.
+            if (app.Environment.IsDevelopment())
+            {
+                app.MapOpenApi();
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
+
+            app.UseHttpsRedirection();
+
+            app.UseAuthorization();
+
+
+            app.MapControllers();
+
+            app.Run();
+        }
+    }
+}
+namespace DirtBikeServer
+{
+    public class WeatherForecast
+    {
+        public DateOnly Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+
+        public string? Summary { get; set; }
+    }
+}
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+using Microsoft.AspNetCore.Mvc;
+namespace DirtBikeServer.Controllers {
+    [ApiController]
+    [Route("api/[controller]")]
+    public class BookingController: ControllerBase {
+        private readonly IBookingService _service;
+        public BookingController(IBookingService service) => _service = service;
+
+        [HttpGet("{bookingId:Guid}")]
+        public async Task<IActionResult> GetBooking([FromRoute] Guid bookingId)
+            => Ok(await _service.GetBooking(bookingId));
+
+        [HttpGet]
+        public async Task<IActionResult> GetBookings()
+            => Ok(await _service.GetBookings());
+
+        [HttpDelete("{bookingId:Guid}")]
+        public async Task<IActionResult> RemoveBooking([FromRoute] Guid bookingId)
+          => Ok(await _service.RemoveBooking(bookingId));
+
+        [HttpPost("{parkId:Guid}")]
+        public async Task<IActionResult> CreateBooking([FromRoute] Guid parkId, [FromBody] BookingDTOs.CreateBookingDTO dto)
+            => Ok(await _service.CreateBooking(parkId, dto.Adults, dto.Children, dto.CartId));
+    }
+}
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DirtBikeServer.Controllers {
+    [ApiController]
+    [Route("api/[controller]")]
+    public class CartController: ControllerBase {
+        private readonly ICartService _service;
+        public CartController(ICartService service) => _service = service;
+
+        [HttpPost("/add_booking")]
+        public async Task<IActionResult> AddBookingToCart([FromBody] CartDTOs.CreateCartBookingDTO dto)
+          => Ok(await _service.AddBookingToCart(dto.CartId, dto.ParkId, dto.BookingInfo));
+
+        [HttpPut("/remove_booking")]
+        public async Task<IActionResult> RemoveBookingFromCart([FromBody] CartDTOs.RemoveBookingDTO dto)
+            => Ok(await _service.RemoveBookingFromCart(dto.CartId, dto.BookingId));
+
+        [HttpGet("{cartId:Guid}")]
+        public async Task<IActionResult> GetCart([FromRoute] Guid cartId)
+            => Ok(await _service.GetCart(cartId));
+
+        [HttpGet]
+        public async Task<IActionResult> GetCart()
+            => Ok(await _service.GetCart());
+
+        [HttpPost("/payment")]
+        public async Task<IActionResult> ProcessPayment([FromBody] CartDTOs.ProcessPaymentDTO dto)
+            => Ok(await _service.ProcessPayment(dto.CartId, dto.CardNumber, dto.ExpirationDate, dto.CardHolderName, dto.Cvc));
+    }
+}
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DirtBikeServer.Controllers {
+    [ApiController]
+    [Route("api/[controller]")]
+    public class ParkController: ControllerBase {
+        private readonly IParkService _service;
+        public ParkController(IParkService service) => _service = service;
+
+        [HttpPost]
+        public async Task<IActionResult> AddPark([FromBody] ParkDTOs.CreateParkDTO park)
+            => Ok(await _service.AddPark(park.Name, park.Location, park.Description));
+
+        [HttpDelete("{parkId:Guid}")]
+        public async Task<IActionResult> RemovePark([FromRoute] Guid parkId)
+            => Ok(await _service.RemovePark(parkId));
+
+        [HttpGet("{parkId:Guid}")]
+        public async Task<IActionResult> GetPark([FromRoute] Guid parkId)
+            => Ok(await _service.GetPark(parkId));
+
+        [HttpGet]
+        public async Task<IActionResult> GetParks()
+            => Ok(await _service.GetParks());
+
+        [HttpPost("/guests")]
+        public async Task<IActionResult> AddGuestLimitToPark([FromBody] ParkDTOs.GuestDTO dto)
+            => Ok(await _service.AddGuestLimitToPark(dto.ParkId, dto.NumberOfGuests));
+        
+        [HttpDelete("/guests")]
+        public async Task<IActionResult> RemoveGuestsFromPark([FromBody] ParkDTOs.GuestDTO dto)
+            => Ok(await _service.RemoveGuestsFromPark(dto.ParkId, dto.NumberOfGuests));
+
+        [HttpPut("edit/{parkId:Guid}")]
+        public async Task<IActionResult> EditPark([FromRoute] Guid parkId, [FromBody] Park newPark)
+            => Ok(await _service.EditPark(parkId, newPark));
+
+
+    }
+}
+using Microsoft.AspNetCore.Mvc;
+
+namespace DirtBikeServer.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class WeatherForecastController : ControllerBase
+    {
+        private static readonly string[] Summaries = new[]
+        {
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        };
+
+        private readonly ILogger<WeatherForecastController> _logger;
+
+        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        {
+            _logger = logger;
+        }
+
+        [HttpGet(Name = "GetWeatherForecast")]
+        public IEnumerable<WeatherForecast> Get()
+        {
+            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            {
+                Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+                TemperatureC = Random.Shared.Next(-20, 55),
+                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
+            })
+            .ToArray();
+        }
+    }
+}
+﻿using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Data {
+    public class BookingDTOs {
+        public class CreateBookingDTO {
+            public int Adults { get; set; }
+            public int Children { get; set; }
+            public Guid? CartId { get; set; }
+        }
+
+        public class BookingInfoDTO {
+            public int Adults { get; set; }
+            public int Children { get; set; }
+        }
+    }
+}
+﻿using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace DirtBikeServer.Data {
+    public class BookingRepository: IBookingRepository {
+        private readonly DirtBikeDbContext _context;
+        public BookingRepository(DirtBikeDbContext context) => _context = context;
+
+        public async Task<bool> AddBookingAsync(Booking booking) {
+            _context.Bookings.Add(booking);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<List<Booking>> GetBookingsAsync() {
+            return await _context.Bookings.ToListAsync();
+        }
+
+        public async Task<Booking?> GetBookingFromIdAsync(Guid id) {
+            var query = from booking in _context.Bookings
+                        where booking.Id == id
+                        select booking;
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> DeleteBookingFromIdAsync(Guid id) {
+            var query = from booking in _context.Bookings
+                        where booking.Id == id
+                        select booking;
+            var bookingToDelete = await query.FirstOrDefaultAsync();
+
+            if (bookingToDelete == null)
+                return false;
+            _context.Bookings.Remove(bookingToDelete);
+            return await _context.SaveChangesAsync() > 0;
+        }
+    }
+}
+﻿using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Data {
+    public class CartDTOs {
+        public class CreateCartBookingDTO {
+            public Guid CartId { get; set; }
+            public Guid ParkId { get; set; }
+            public required BookingDTOs.BookingInfoDTO BookingInfo { get; set; }
+        }
+
+        public class CartResponseDTO {
+
+            public Cart? OutCart { get; set; }
+            public Guid Id { get; set; }
+        }
+
+        public class RemoveBookingDTO {
+            public Guid CartId { get; set; }
+            public Guid BookingId { get; set; }
+        }
+
+        public class ProcessPaymentDTO {
+            public Guid CartId { get; set; }
+            public required string CardNumber { get; set; }
+            public DateTime ExpirationDate { get; set; }
+            public required string CardHolderName { get; set; }
+            public int Cvc {  get; set; }
+        }
+    }
+}
+﻿using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace DirtBikeServer.Data {
+    public class CartRepository: ICartRepository {
+        private readonly DirtBikeDbContext _context;
+        public CartRepository(DirtBikeDbContext context) => _context = context;
+
+        public async Task<bool> AddBookingAsync(Cart cart, Booking booking) {
+            cart.Items.Add(booking);
+            _context.Bookings.Add(booking);
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> CreateCartAsync(Cart cart) {
+            _context.Carts.Add(cart);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<Cart?> GetCartAsync(Guid cartId) {
+            var query = from cart in _context.Carts
+                        where cart.Id == cartId
+                        select cart;
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<bool> RemoveBookingAsync(Cart cart, Booking booking) {
+            cart.Items.Remove(booking);
+            _context.Bookings.Remove(booking);
+            return await SaveCartsAsync();
+        }
+
+        public async Task<bool> SaveCartsAsync() {
+            return await _context.SaveChangesAsync() > 0;
+        }
+    }
+}
+﻿using DirtBikeServer.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace DirtBikeServer.Data {
+    public class DirtBikeDbContext: DbContext {
+        public DirtBikeDbContext(DbContextOptions<DirtBikeDbContext> options) : base(options) { }
+
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Cart> Carts { get; set; }
+        public DbSet<Park> Parks { get; set; }
+    }
+}
+﻿using DirtBikeServer.Models;
+using System;
+
+namespace DirtBikeServer.Data {
+    public class ParkDTOs {
+        public class CreateParkDTO {
+            public required string Name { get; set; }
+            public required string Location { get; set; }
+            public string? Description { get; set; }
+        }
+
+        public class GuestDTO {
+            public Guid ParkId {  get; set; }
+            public int NumberOfGuests { get; set; }
+        }
+    }
+}
+﻿using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+using Microsoft.EntityFrameworkCore;
+
+namespace DirtBikeServer.Data {
+    public class ParkRepository: IParkRepository {
+        private readonly DirtBikeDbContext _context;
+        public ParkRepository(DirtBikeDbContext context) => _context = context;
+
+        public async Task<bool> AddParkAsync(Park park) {
+            _context.Parks.Add(park);
+            return await _context.SaveChangesAsync() > 0;
+            
+        }
+
+        public async Task<Park?> GetParkFromIdAsync(Guid id) {
+            var query = from park in _context.Parks
+                        where park.Id == id
+                        select park;
+            return await query.FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Park>> GetParksAsync() {
+            return await _context.Parks.ToListAsync();
+        }
+
+        public async Task<bool> DeleteParkFromIdAsync(Guid id) {
+            var query = from park in _context.Parks
+                        where park.Id == id
+                        select park;
+            var parkToDelete = await query.FirstOrDefaultAsync();
+
+            if (parkToDelete == null)
+                return false;
+
+            _context.Parks.Remove(parkToDelete);
+            return await _context.SaveChangesAsync() > 0;
+        }
+    }
+}
+﻿ using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Interfaces {
+    public interface IBookingRepository {
+        Task<bool> AddBookingAsync(Booking booking);
+        Task<List<Booking>> GetBookingsAsync();
+        Task<Booking?> GetBookingFromIdAsync(Guid id);
+        Task<bool> DeleteBookingFromIdAsync(Guid id);
+    }
+}
+﻿using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Interfaces {
+    public interface IBookingService {
+        Task<Booking?> GetBooking(Guid parkId);
+        Task<List<Booking>> GetBookings();
+        Task<bool> RemoveBooking(Guid bookingId);
+        Task<bool> CreateBooking(Guid parkId, int adults, int children, Guid? cartId);
+    }
+}
+﻿using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Interfaces {
+    public interface ICartRepository {
+        Task<Cart?> GetCartAsync(Guid cartId);
+        Task<bool> CreateCartAsync(Cart cartId);
+
+        Task<bool> AddBookingAsync(Cart cart, Booking booking);
+        Task<bool> RemoveBookingAsync(Cart cart, Booking booking);
+    }
+}
+﻿using DirtBikeServer.Models;
+using DirtBikeServer.Data;
+
+namespace DirtBikeServer.Interfaces {
+    public interface ICartService {
+        Task<bool> AddBookingToCart(Guid cartId, Guid parkId, BookingDTOs.BookingInfoDTO bookingInfo);
+        Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId);
+        Task<CartDTOs.CartResponseDTO> GetCart(Guid cartId);
+        Task<CartDTOs.CartResponseDTO> GetCart();
+        Task<bool> ProcessPayment(Guid cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc);
+    }
+}
+﻿using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Interfaces {
+    public interface IParkRepository {
+        Task<bool> AddParkAsync(Park park);
+        Task<List<Park>> GetParksAsync();
+        Task<Park?> GetParkFromIdAsync(Guid id);
+        Task<bool> DeleteParkFromIdAsync(Guid parkId);
+    }
+}﻿using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Interfaces {
+    public interface IParkService {
+        Task<bool> AddPark(string name, string location, string? description);
+        Task<bool> RemovePark(Guid parkId);
+        Task<Park?> GetPark(Guid parkId);
+        Task<List<Park>> GetParks();
+        Task<bool> AddGuestLimitToPark(Guid parkId, int numberOfGuests);
+        Task<bool> RemoveGuestsFromPark(Guid parkId, int numberOfGuests);
+        Task<bool> EditPark(Guid parkId, Park newPark);
+    }
+}
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace DirtBikeServer.Migrations
+{
+    /// <inheritdoc />
+    public partial class Initial : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "Carts",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Carts", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Parks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Location = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Parks", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Bookings",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ParkId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Adults = table.Column<int>(type: "int", nullable: false),
+                    Children = table.Column<int>(type: "int", nullable: false),
+                    CartID = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Bookings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Bookings_Carts_CartID",
+                        column: x => x.CartID,
+                        principalTable: "Carts",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Bookings_Parks_ParkId",
+                        column: x => x.ParkId,
+                        principalTable: "Parks",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookings_CartID",
+                table: "Bookings",
+                column: "CartID");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bookings_ParkId",
+                table: "Bookings",
+                column: "ParkId");
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "Bookings");
+
+            migrationBuilder.DropTable(
+                name: "Carts");
+
+            migrationBuilder.DropTable(
+                name: "Parks");
+        }
+    }
+}
+﻿// <auto-generated />
+using System;
+using DirtBikeServer.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace DirtBikeServer.Migrations
+{
+    [DbContext(typeof(DirtBikeDbContext))]
+    [Migration("20251101191107_Initial")]
+    partial class Initial
+    {
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("DirtBikeServer.Models.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Adults")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CartID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Children")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ParkId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartID");
+
+                    b.HasIndex("ParkId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Cart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Park", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Parks");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Booking", b =>
+                {
+                    b.HasOne("DirtBikeServer.Models.Cart", null)
+                        .WithMany("Items")
+                        .HasForeignKey("CartID");
+
+                    b.HasOne("DirtBikeServer.Models.Park", "Park")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ParkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Park");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Cart", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Park", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+﻿// <auto-generated />
+using System;
+using DirtBikeServer.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+#nullable disable
+
+namespace DirtBikeServer.Migrations
+{
+    [DbContext(typeof(DirtBikeDbContext))]
+    partial class DirtBikeDbContextModelSnapshot : ModelSnapshot
+    {
+        protected override void BuildModel(ModelBuilder modelBuilder)
+        {
+#pragma warning disable 612, 618
+            modelBuilder
+                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("Proxies:ChangeTracking", false)
+                .HasAnnotation("Proxies:CheckEquality", false)
+                .HasAnnotation("Proxies:LazyLoading", true)
+                .HasAnnotation("Relational:MaxIdentifierLength", 128);
+
+            SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("DirtBikeServer.Models.Booking", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Adults")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("CartID")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Children")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ParkId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CartID");
+
+                    b.HasIndex("ParkId");
+
+                    b.ToTable("Bookings");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Cart", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Carts");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Park", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Parks");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Booking", b =>
+                {
+                    b.HasOne("DirtBikeServer.Models.Cart", null)
+                        .WithMany("Items")
+                        .HasForeignKey("CartID");
+
+                    b.HasOne("DirtBikeServer.Models.Park", "Park")
+                        .WithMany("Bookings")
+                        .HasForeignKey("ParkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Park");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Cart", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("DirtBikeServer.Models.Park", b =>
+                {
+                    b.Navigation("Bookings");
+                });
+#pragma warning restore 612, 618
+        }
+    }
+}
+﻿namespace DirtBikeServer.Models {
+    public class Booking {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid ParkId { get; set; }
+        public virtual Park? Park { get; set; }
+        public int Adults { get; set; } = 0;
+        public int Children { get; set; } = 0;
+        public Guid? CartID { get; set; }
+    }
+}
+﻿namespace DirtBikeServer.Models {
+    public class Cart {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public virtual ICollection<Booking> Items { get; set; } = new List<Booking>();
+    }
+}
+﻿namespace DirtBikeServer.Models {
+    public class Park {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public string Name { get; set; } = String.Empty;
+        public string Location { get; set; } = String.Empty;
+        public string? Description { get; set; } 
+        public virtual ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    }
+}
+// <autogenerated />
+using System;
+using System.Reflection;
+[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETCoreApp,Version=v9.0", FrameworkDisplayName = ".NET 9.0")]
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a tool.
+//     Runtime Version:4.0.30319.42000
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: System.Reflection.AssemblyCompanyAttribute("DirtBikeServer")]
+[assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e17d83870f31edd0e2f4bc693c7ada2da4cbd8dc")]
+[assembly: System.Reflection.AssemblyProductAttribute("DirtBikeServer")]
+[assembly: System.Reflection.AssemblyTitleAttribute("DirtBikeServer")]
+[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+
+// Generated by the MSBuild WriteCodeFragment class.
+
+// <auto-generated/>
+global using global::Microsoft.AspNetCore.Builder;
+global using global::Microsoft.AspNetCore.Hosting;
+global using global::Microsoft.AspNetCore.Http;
+global using global::Microsoft.AspNetCore.Routing;
+global using global::Microsoft.Extensions.Configuration;
+global using global::Microsoft.Extensions.DependencyInjection;
+global using global::Microsoft.Extensions.Hosting;
+global using global::Microsoft.Extensions.Logging;
+global using global::System;
+global using global::System.Collections.Generic;
+global using global::System.IO;
+global using global::System.Linq;
+global using global::System.Net.Http;
+global using global::System.Net.Http.Json;
+global using global::System.Threading;
+global using global::System.Threading.Tasks;
+//------------------------------------------------------------------------------
+// <auto-generated>
+//     This code was generated by a tool.
+//     Runtime Version:4.0.30319.42000
+//
+//     Changes to this file may cause incorrect behavior and will be lost if
+//     the code is regenerated.
+// </auto-generated>
+//------------------------------------------------------------------------------
+
+using System;
+using System.Reflection;
+
+[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute("Microsoft.AspNetCore.OpenApi")]
+[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartAttribute("Swashbuckle.AspNetCore.SwaggerGen")]
+
+// Generated by the MSBuild WriteCodeFragment class.
+
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Services {
+    public class BookingService: IBookingService {
+        private readonly IBookingRepository _repository;
+        public BookingService(IBookingRepository repository) => _repository = repository;
+
+        public async Task<Booking?> GetBooking(Guid bookingId) {
+            return await _repository.GetBookingFromIdAsync(bookingId);
+        }
+
+        public async Task<List<Booking>> GetBookings() {
+            return await _repository.GetBookingsAsync();
+        }
+
+        public async Task<bool> RemoveBooking(Guid bookingId) {
+            return await _repository.DeleteBookingFromIdAsync(bookingId);
+        }
+
+        public async Task<bool> CreateBooking(Guid parkId, int adults, int children, Guid? cartId) {
+            var booking = new Booking {
+                ParkId = parkId,
+                Adults = adults,
+                Children = children,
+                CartID = cartId
+            };
+            return await _repository.AddBookingAsync(booking);
+        }
+    }
+}
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Services {
+    public class CartService : ICartService {
+        private readonly ICartRepository _repository;
+        public CartService(ICartRepository repository) => _repository = repository;
+
+        public async Task<bool> AddBookingToCart(Guid cartId, Guid parkId, BookingDTOs.BookingInfoDTO bookingInfo) {
+            var cart = await _repository.GetCartAsync(cartId);
+            if (cart == null)
+                return false;
+
+            var booking = new Booking {
+                ParkId = parkId,
+                Adults = bookingInfo.Adults,
+                Children = bookingInfo.Children,
+                CartID = cartId
+            };
+
+            return await _repository.AddBookingAsync(cart, booking);
+        }
+// First attempts to obtain a cart with the given ID.
+// If the cart does not exist, it will query the database to create a new one.
+// TODO: Error handling if the database cannot create the cart.
+        public async Task<CartDTOs.CartResponseDTO> GetCart(Guid cartId) {
+            var searchedCart = await _repository.GetCartAsync(cartId);
+            if (searchedCart == null) {
+                var createdCart = new Cart();
+                createdCart.Id = cartId;
+
+                var success = await _repository.CreateCartAsync(createdCart);
+                var response = new CartDTOs.CartResponseDTO {
+                    OutCart = createdCart,
+                    Id = createdCart.Id
+                };
+                return response;
+            } else {
+                var response = new CartDTOs.CartResponseDTO {
+                    OutCart = searchedCart,
+                    Id = searchedCart.Id
+                };
+                return response;
+            }
+        }
+// If no ID is specified, always create a new cart, then return it.
+        public async Task<CartDTOs.CartResponseDTO> GetCart() {
+            var cart = new Cart();
+            var success = await _repository.CreateCartAsync(cart);
+
+            var response = new CartDTOs.CartResponseDTO {
+                OutCart = cart,
+                Id = cart.Id
+            };
+            return response;
+        }
+
+        public Task<bool> ProcessPayment(Guid cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc) {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId) {
+            var cart = await _repository.GetCartAsync(cartId);
+            if (cart == null)
+                throw new DirectoryNotFoundException();
+
+            var booking = cart.Items.FirstOrDefault(b => b.Id == bookingId);
+
+            if (booking == null)
+                return cart;
+
+            var success = await _repository.RemoveBookingAsync(cart, booking);
+
+            return cart;
+                
+        }
+    }
+}
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Interfaces;
+using DirtBikeServer.Models;
+
+namespace DirtBikeServer.Services {
+    public class ParkService : IParkService {
+        private readonly IParkRepository _repository;
+        public ParkService(IParkRepository repository) => _repository = repository;
+
+        public Task<bool> AddGuestLimitToPark(Guid parkId, int numberOfGuests) {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> AddPark(string name, string location, string? description) {
+            var park = new Park {
+                Name = name,
+                Location = location,
+                Description = description
+            };
+            return await _repository.AddParkAsync(park);
+        }
+
+        public Task<bool> EditPark(Guid parkId, Park newPark) {
+            throw new NotImplementedException();
+        }
+
+        public async Task<Park?> GetPark(Guid parkId) {
+            return await _repository.GetParkFromIdAsync(parkId);
+        }
+
+        public async Task<List<Park>> GetParks() {
+            return await _repository.GetParksAsync();
+        }
+
+        public Task<bool> RemoveGuestsFromPark(Guid parkId, int numberOfGuests) {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> RemovePark(Guid parkId) {
+            return await _repository.DeleteParkFromIdAsync(parkId);
+        }
+    }
+}
