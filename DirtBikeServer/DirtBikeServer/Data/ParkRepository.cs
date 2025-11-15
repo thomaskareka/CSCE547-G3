@@ -36,5 +36,19 @@ namespace DirtBikeServer.Data {
             _context.Parks.Remove(parkToDelete);
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<int> GetNumberOfBookingsForDay(Guid parkId, DateTime? day) {
+            if (day == null)
+                day = DateTime.Today;
+            var park = await GetParkFromIdAsync(parkId);
+            if (park == null)
+                return 0;
+            var query = from booking in park.Bookings
+                        where day >= booking.StartDate
+                            && day < booking.StartDate.AddDays(booking.NumDays)
+                        select booking;
+
+            return query.Count();
+        }
     }
 }

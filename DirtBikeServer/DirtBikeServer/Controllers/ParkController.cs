@@ -11,8 +11,8 @@ namespace DirtBikeServer.Controllers {
         public ParkController(IParkService service) => _service = service;
 
         [HttpPost]
-        public async Task<IActionResult> AddPark([FromBody] ParkDTOs.CreateParkDTO park)
-            => Ok(await _service.AddPark(park.Name, park.Location, park.Description));
+        public async Task<IActionResult> AddPark([FromBody] ParkDTOs.CreateParkDTO dto)
+            => Ok(await _service.AddPark(dto));
 
         [HttpDelete("{parkId:Guid}")]
         public async Task<IActionResult> RemovePark([FromRoute] Guid parkId)
@@ -28,15 +28,15 @@ namespace DirtBikeServer.Controllers {
 
         [HttpPost("/guests")]
         public async Task<IActionResult> AddGuestLimitToPark([FromBody] ParkDTOs.GuestDTO dto)
-            => Ok(await _service.AddGuestLimitToPark(dto.ParkId, dto.NumberOfGuests));
+            => Ok(await _service.AddGuestLimitToPark(dto));
         
         [HttpDelete("/guests")]
         public async Task<IActionResult> RemoveGuestsFromPark([FromBody] ParkDTOs.GuestDTO dto)
-            => Ok(await _service.RemoveGuestsFromPark(dto.ParkId, dto.NumberOfGuests));
+            => Ok(await _service.RemoveGuestsFromPark(dto));
 
         [HttpPut("edit/{parkId:Guid}")]
-        public async Task<IActionResult> EditPark([FromRoute] Guid parkId, [FromBody] Park newPark)
-            => Ok(await _service.EditPark(parkId, newPark));
+        public async Task<IActionResult> EditPark([FromBody] ParkDTOs.EditParkDTO dto)
+            => Ok(await _service.EditPark(dto));
 
 
     }

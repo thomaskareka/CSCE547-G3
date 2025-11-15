@@ -1,13 +1,14 @@
-﻿using DirtBikeServer.Models;
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Models;
 
 namespace DirtBikeServer.Interfaces {
     public interface IParkService {
-        Task<bool> AddPark(string name, string location, string? description);
+        Task<bool> AddPark(ParkDTOs.CreateParkDTO dto);
         Task<bool> RemovePark(Guid parkId);
         Task<Park?> GetPark(Guid parkId);
         Task<List<Park>> GetParks();
-        Task<bool> AddGuestLimitToPark(Guid parkId, int numberOfGuests);
-        Task<bool> RemoveGuestsFromPark(Guid parkId, int numberOfGuests);
-        Task<bool> EditPark(Guid parkId, Park newPark);
+        Task<bool> AddGuestLimitToPark(ParkDTOs.GuestDTO dto);
+        Task<bool> RemoveGuestsFromPark(ParkDTOs.GuestDTO dto);
+        Task<bool> EditPark(ParkDTOs.EditParkDTO dto);
     }
 }

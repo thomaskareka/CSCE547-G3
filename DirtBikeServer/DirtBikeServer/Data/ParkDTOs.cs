@@ -13,5 +13,12 @@ namespace DirtBikeServer.Data {
             public Guid ParkId {  get; set; }
             public int NumberOfGuests { get; set; }
         }
+
+        public class EditParkDTO {
+            public Guid ParkId { get; set; }
+            public decimal AdultPrice { get; set; }
+            public decimal ChildPrice { get; set; }
+            public int GuestLimit { get; set; }
+        }
     }
 }

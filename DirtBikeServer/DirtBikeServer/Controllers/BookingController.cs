@@ -23,6 +23,6 @@ namespace DirtBikeServer.Controllers {
 
         [HttpPost("{parkId:Guid}")]
         public async Task<IActionResult> CreateBooking([FromRoute] Guid parkId, [FromBody] BookingDTOs.CreateBookingDTO dto)
-            => Ok(await _service.CreateBooking(parkId, dto.Adults, dto.Children, dto.CartId));
+            => Ok(await _service.CreateBooking(parkId, dto));
     }
 }

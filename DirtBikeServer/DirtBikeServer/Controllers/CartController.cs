@@ -12,11 +12,11 @@ namespace DirtBikeServer.Controllers {
 
         [HttpPost("/add_booking")]
         public async Task<IActionResult> AddBookingToCart([FromBody] CartDTOs.CreateCartBookingDTO dto)
-          => Ok(await _service.AddBookingToCart(dto.CartId, dto.ParkId, dto.BookingInfo));
+          => Ok(await _service.AddBookingToCart(dto));
 
         [HttpPut("/remove_booking")]
         public async Task<IActionResult> RemoveBookingFromCart([FromBody] CartDTOs.RemoveBookingDTO dto)
-            => Ok(await _service.RemoveBookingFromCart(dto.CartId, dto.BookingId));
+            => Ok(await _service.RemoveBookingFromCart(dto));
 
         [HttpGet("{cartId:Guid}")]
         public async Task<IActionResult> GetCart([FromRoute] Guid cartId)
@@ -28,6 +28,6 @@ namespace DirtBikeServer.Controllers {
 
         [HttpPost("/payment")]
         public async Task<IActionResult> ProcessPayment([FromBody] CartDTOs.ProcessPaymentDTO dto)
-            => Ok(await _service.ProcessPayment(dto.CartId, dto.CardNumber, dto.ExpirationDate, dto.CardHolderName, dto.Cvc));
+            => Ok(await _service.ProcessPayment(dto));
     }
 }

@@ -7,31 +7,31 @@ namespace DirtBikeServer.Services {
         private readonly ICartRepository _repository;
         public CartService(ICartRepository repository) => _repository = repository;
 
-        public async Task<bool> AddBookingToCart(Guid cartId, Guid parkId, BookingDTOs.BookingInfoDTO bookingInfo) {
-            if (cartId == Guid.Empty)
-                throw new ArgumentException("Cart ID cannot be empty.", nameof(cartId));
+        public async Task<bool> AddBookingToCart(CartDTOs.CreateCartBookingDTO dto) {
+            if (dto.CartId == Guid.Empty)
+                throw new ArgumentException("Cart ID cannot be empty.", nameof(dto.CartId));
 
-            if (parkId == Guid.Empty)
-                throw new ArgumentException("Park ID cannot be empty.", nameof(parkId));
+            if (dto.ParkId == Guid.Empty)
+                throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
-            if (bookingInfo == null)
-                throw new ArgumentNullException(nameof(bookingInfo), "Booking information cannot be null.");
+            if (dto.BookingInfo == null)
+                throw new ArgumentNullException(nameof(dto.BookingInfo), "Booking information cannot be null.");
 
-            if (bookingInfo.Adults < 0 || bookingInfo.Children < 0)
+            if (dto.BookingInfo.Adults < 0 || dto.BookingInfo.Children < 0)
                 throw new ArgumentException("Adults and children must be non-negative values.");
 
-            if (bookingInfo.Adults + bookingInfo.Children == 0)
+            if (dto.BookingInfo.Adults + dto.BookingInfo.Children == 0)
                 throw new ArgumentException("At least one participant is required to create a booking.");
 
-            var cart = await _repository.GetCartAsync(cartId);
+            var cart = await _repository.GetCartAsync(dto.CartId);
             if (cart == null)
                 return false;
 
             var booking = new Booking {
-                ParkId = parkId,
-                Adults = bookingInfo.Adults,
-                Children = bookingInfo.Children,
-                CartID = cartId
+                ParkId = dto.ParkId,
+                Adults = dto.BookingInfo.Adults,
+                Children = dto.BookingInfo.Children,
+                CartID = dto.CartId
             };
 
             return await _repository.AddBookingAsync(cart, booking);
@@ -77,22 +77,22 @@ namespace DirtBikeServer.Services {
             return response;
         }
 
-        public Task<bool> ProcessPayment(Guid cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc) {
+        public Task<bool> ProcessPayment(CartDTOs.ProcessPaymentDTO dto) {
             throw new NotImplementedException();
         }
 
-        public async Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId) {
-            if (cartId == Guid.Empty)
-                throw new ArgumentException("Cart ID cannot be empty.", nameof(cartId));
+        public async Task<Cart> RemoveBookingFromCart(CartDTOs.RemoveBookingDTO dto) {
+            if (dto.CartId == Guid.Empty)
+                throw new ArgumentException("Cart ID cannot be empty.", nameof(dto.CartId));
 
-            if (bookingId == Guid.Empty)
-                throw new ArgumentException("Booking ID cannot be empty.", nameof(bookingId));
+            if (dto.BookingId == Guid.Empty)
+                throw new ArgumentException("Booking ID cannot be empty.", nameof(dto.BookingId));
 
-            var cart = await _repository.GetCartAsync(cartId);
+            var cart = await _repository.GetCartAsync(dto.CartId);
             if (cart == null)
-                throw new KeyNotFoundException($"Cart with ID {cartId} was not found.");
+                throw new KeyNotFoundException($"Cart with ID {dto.CartId} was not found.");
 
-            var booking = cart.Items.FirstOrDefault(b => b.Id == bookingId);
+            var booking = cart.Items.FirstOrDefault(b => b.Id == dto.BookingId);
 
             if (booking == null)
                 return cart;

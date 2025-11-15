@@ -1,10 +1,11 @@
-﻿using DirtBikeServer.Models;
+﻿using DirtBikeServer.Data;
+using DirtBikeServer.Models;
 
 namespace DirtBikeServer.Interfaces {
     public interface IBookingService {
         Task<Booking?> GetBooking(Guid parkId);
         Task<List<Booking>> GetBookings();
         Task<bool> RemoveBooking(Guid bookingId);
-        Task<bool> CreateBooking(Guid parkId, int adults, int children, Guid? cartId);
+        Task<bool> CreateBooking(Guid parkId, BookingDTOs.CreateBookingDTO dto);
     }
 }

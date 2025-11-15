@@ -3,10 +3,10 @@ using DirtBikeServer.Data;
 
 namespace DirtBikeServer.Interfaces {
     public interface ICartService {
-        Task<bool> AddBookingToCart(Guid cartId, Guid parkId, BookingDTOs.BookingInfoDTO bookingInfo);
-        Task<Cart> RemoveBookingFromCart(Guid cartId, Guid bookingId);
+        Task<bool> AddBookingToCart(CartDTOs.CreateCartBookingDTO dto);
+        Task<Cart> RemoveBookingFromCart(CartDTOs.RemoveBookingDTO dto);
         Task<CartDTOs.CartResponseDTO> GetCart(Guid cartId);
         Task<CartDTOs.CartResponseDTO> GetCart();
-        Task<bool> ProcessPayment(Guid cartId, string cardNumber, DateTime exp, string cardHolderName, int cvc);
+        Task<bool> ProcessPayment(CartDTOs.ProcessPaymentDTO dto);
     }
 }

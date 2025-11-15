@@ -7,43 +7,34 @@ namespace DirtBikeServer.Services {
         private readonly IParkRepository _repository;
         public ParkService(IParkRepository repository) => _repository = repository;
 
-        public Task<bool> AddGuestLimitToPark(Guid parkId, int numberOfGuests) {
-            if (parkId == Guid.Empty)
-                throw new ArgumentException("Park ID cannot be empty.", nameof(parkId));
+        public Task<bool> AddGuestLimitToPark(ParkDTOs.GuestDTO dto) {
+            if (dto.ParkId == Guid.Empty)
+                throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
-            if (numberOfGuests <= 0)
-                throw new ArgumentException("Guest limit must be greater than zero.", nameof(numberOfGuests));
+            if (dto.NumberOfGuests <= 0)
+                throw new ArgumentException("Guest limit must be greater than zero.", nameof(dto.NumberOfGuests));
             throw new NotImplementedException();
         }
 
-        public async Task<bool> AddPark(string name, string location, string? description) {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Park name cannot be empty.", nameof(name));
+        public async Task<bool> AddPark(ParkDTOs.CreateParkDTO dto) {
+            if (string.IsNullOrWhiteSpace(dto.Name))
+                throw new ArgumentException("Park name cannot be empty.", nameof(dto.Name));
 
-            if (string.IsNullOrWhiteSpace(location))
-                throw new ArgumentException("Park location cannot be empty.", nameof(location));
+            if (string.IsNullOrWhiteSpace(dto.Location))
+                throw new ArgumentException("Park location cannot be empty.", nameof(dto.Location));
 
             
             var park = new Park {
-                Name = name,
-                Location = location,
-                Description = description
+                Name = dto.Name,
+                Location = dto.Location,
+                Description = dto.Description
             };
             return await _repository.AddParkAsync(park);
         }
 
-        public Task<bool> EditPark(Guid parkId, Park newPark) {
-            if (parkId == Guid.Empty)
-                throw new ArgumentException("Park ID cannot be empty.", nameof(parkId));
-
-            if (newPark == null)
-                throw new ArgumentNullException(nameof(newPark));
-
-            if (string.IsNullOrWhiteSpace(newPark.Name))
-                throw new ArgumentException("Park name cannot be empty.", nameof(newPark.Name));
-
-            if (string.IsNullOrWhiteSpace(newPark.Location))
-                throw new ArgumentException("Park location cannot be empty.", nameof(newPark.Location));
+        public Task<bool> EditPark(ParkDTOs.EditParkDTO dto) {
+            if (dto.ParkId == Guid.Empty)
+                throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
             throw new NotImplementedException();
         }
@@ -58,12 +49,12 @@ namespace DirtBikeServer.Services {
             return await _repository.GetParksAsync();
         }
 
-        public Task<bool> RemoveGuestsFromPark(Guid parkId, int numberOfGuests) {
-            if (parkId == Guid.Empty)
-                throw new ArgumentException("Park ID cannot be empty.", nameof(parkId));
+        public Task<bool> RemoveGuestsFromPark(ParkDTOs.GuestDTO dto) {
+            if (dto.ParkId == Guid.Empty)
+                throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
-            if (numberOfGuests <= 0)
-                throw new ArgumentException("Number of guests to remove must be greater than zero.", nameof(numberOfGuests));
+            if (dto.NumberOfGuests <= 0)
+                throw new ArgumentException("Number of guests to remove must be greater than zero.", nameof(dto.NumberOfGuests));
 
             throw new NotImplementedException();
         }

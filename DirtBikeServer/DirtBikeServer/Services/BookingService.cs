@@ -27,24 +27,24 @@ namespace DirtBikeServer.Services {
             return await _repository.DeleteBookingFromIdAsync(bookingId);
         }
 
-        public async Task<bool> CreateBooking(Guid parkId, int adults, int children, Guid? cartId) {
+        public async Task<bool> CreateBooking(Guid parkId, BookingDTOs.CreateBookingDTO dto) {
             if (parkId == Guid.Empty)
                 throw new ArgumentException("Park ID cannot be empty.", nameof(parkId));
 
-            if (adults < 0 || children < 0)
+            if (dto.Adults < 0 || dto.Children < 0)
                 throw new ArgumentException("Adults and children cannot be negative.");
 
-            if (adults + children == 0)
+            if (dto.Adults + dto.Children == 0)
                 throw new ArgumentException("At least one participant is required.");
 
-            if (cartId.HasValue && cartId == Guid.Empty)
-                throw new ArgumentException("Invalid cart ID.", nameof(cartId));
+            if (dto.CartId.HasValue && dto.CartId == Guid.Empty)
+                throw new ArgumentException("Invalid cart ID.", nameof(dto.CartId));
 
             var booking = new Booking {
                 ParkId = parkId,
-                Adults = adults,
-                Children = children,
-                CartID = cartId
+                Adults = dto.Adults,
+                Children = dto.Children,
+                CartID = dto.CartId
             };
             return await _repository.AddBookingAsync(booking);
         }
