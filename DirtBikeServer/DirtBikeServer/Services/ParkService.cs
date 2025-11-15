@@ -27,16 +27,39 @@ namespace DirtBikeServer.Services {
             var park = new Park {
                 Name = dto.Name,
                 Location = dto.Location,
-                Description = dto.Description
+                Description = dto.Description,
+                GuestLimit = dto.GuestLimit,
+                AdultPrice = dto.AdultPrice,
+                ChildPrice = dto.ChildPrice
             };
             return await _repository.AddParkAsync(park);
         }
 
-        public Task<bool> EditPark(ParkDTOs.EditParkDTO dto) {
+        public async Task<bool> EditPark(ParkDTOs.EditParkDTO dto) {
             if (dto.ParkId == Guid.Empty)
                 throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
-            throw new NotImplementedException();
+            var park = await _repository.GetParkFromIdAsync(dto.ParkId);
+            if (park == null) {
+                throw new ArgumentNullException(nameof(dto.ParkId));
+            }
+
+            if (dto.Description is not null)
+                park.Description = dto.Description;
+
+            if (dto.Name is not null)
+                park.Name = dto.Name;
+
+            if (dto.AdultPrice.HasValue)
+                park.AdultPrice = dto.AdultPrice.Value;
+
+            if (dto.ChildPrice.HasValue)
+                park.ChildPrice = dto.ChildPrice.Value;
+
+            if (dto.GuestLimit.HasValue)
+                park.GuestLimit = dto.GuestLimit.Value;
+
+            return await _repository.UpdateParkAsync(park);
         }
 
         public async Task<Park?> GetPark(Guid parkId) {

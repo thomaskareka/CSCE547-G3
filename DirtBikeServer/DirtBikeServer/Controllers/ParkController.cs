@@ -34,7 +34,7 @@ namespace DirtBikeServer.Controllers {
         public async Task<IActionResult> RemoveGuestsFromPark([FromBody] ParkDTOs.GuestDTO dto)
             => Ok(await _service.RemoveGuestsFromPark(dto));
 
-        [HttpPut("edit/{parkId:Guid}")]
+        [HttpPut("edit/")]
         public async Task<IActionResult> EditPark([FromBody] ParkDTOs.EditParkDTO dto)
             => Ok(await _service.EditPark(dto));
 

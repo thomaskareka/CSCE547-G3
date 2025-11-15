@@ -6,7 +6,10 @@ namespace DirtBikeServer.Data {
         public class CreateParkDTO {
             public required string Name { get; set; }
             public required string Location { get; set; }
-            public string? Description { get; set; }
+            public string? Description { get; set; } = "";
+            public decimal AdultPrice { get; set; } = 0;
+            public decimal ChildPrice { get; set; } = 0;
+            public int GuestLimit { get; set; } = 100;
         }
 
         public class GuestDTO {
@@ -16,9 +19,11 @@ namespace DirtBikeServer.Data {
 
         public class EditParkDTO {
             public Guid ParkId { get; set; }
-            public decimal AdultPrice { get; set; }
-            public decimal ChildPrice { get; set; }
-            public int GuestLimit { get; set; }
+            public String? Description { get; set; }
+            public string? Name { get; set; }
+            public decimal? AdultPrice { get; set; }
+            public decimal? ChildPrice { get; set; }
+            public int? GuestLimit { get; set; }
         }
     }
 }

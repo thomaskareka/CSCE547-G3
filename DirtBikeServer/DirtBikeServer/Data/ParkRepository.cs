@@ -50,5 +50,9 @@ namespace DirtBikeServer.Data {
 
             return query.Count();
         }
+        public async Task<bool> UpdateParkAsync(Park park) {
+            _context.Update(park);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }
