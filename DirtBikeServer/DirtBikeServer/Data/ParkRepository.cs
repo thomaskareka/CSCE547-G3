@@ -46,13 +46,19 @@ namespace DirtBikeServer.Data {
             var query = from booking in park.Bookings
                         where day >= booking.StartDate
                             && day < booking.StartDate.AddDays(booking.NumDays)
-                        select booking;
+                        select booking.Adults + booking.Children;
 
-            return query.Count();
+            return query.Sum();
         }
         public async Task<bool> UpdateParkAsync(Park park) {
             _context.Update(park);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<int> GetParkBookingLimit(Guid parkId) {
+            var park = await GetParkFromIdAsync(parkId);
+            if (park == null) return 0;
+            return park.GuestLimit;
         }
     }
 }

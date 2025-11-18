@@ -44,8 +44,11 @@ namespace DirtBikeServer.Services {
                 ParkId = parkId,
                 Adults = dto.Adults,
                 Children = dto.Children,
-                CartID = dto.CartId
+                CartID = dto.CartId,
+                StartDate = dto.StartDate,
+                NumDays = dto.NumDays
             };
+
             return await _repository.AddBookingAsync(booking);
         }
     }

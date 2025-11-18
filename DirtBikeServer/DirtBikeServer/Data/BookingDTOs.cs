@@ -6,11 +6,15 @@ namespace DirtBikeServer.Data {
             public int Adults { get; set; }
             public int Children { get; set; }
             public Guid? CartId { get; set; }
+            public DateTime StartDate { get; set; } = DateTime.Today;
+            public int NumDays { get; set; }
         }
 
         public class BookingInfoDTO {
             public int Adults { get; set; }
             public int Children { get; set; }
+            public DateTime StartDate { get; set; } = DateTime.Today;
+            public int NumDays { get; set; }
         }
     }
 }

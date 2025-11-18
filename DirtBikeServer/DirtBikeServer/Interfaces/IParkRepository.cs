@@ -7,6 +7,7 @@ namespace DirtBikeServer.Interfaces {
         Task<Park?> GetParkFromIdAsync(Guid id);
         Task<bool> DeleteParkFromIdAsync(Guid parkId);
         Task<int> GetNumberOfBookingsForDay(Guid parkId,  DateTime? day);
+        Task<int> GetParkBookingLimit(Guid parkId);
         Task<bool> UpdateParkAsync(Park park);
     }
 }

@@ -10,7 +10,7 @@ namespace DirtBikeServer.Data {
         public async Task<bool> AddBookingAsync(Cart cart, Booking booking) {
             cart.Items.Add(booking);
             _context.Bookings.Add(booking);
-
+         
             return await _context.SaveChangesAsync() > 0;
         }
 

@@ -5,7 +5,13 @@ using DirtBikeServer.Models;
 namespace DirtBikeServer.Services {
     public class CartService : ICartService {
         private readonly ICartRepository _repository;
-        public CartService(ICartRepository repository) => _repository = repository;
+        // CartService relies on certain read-only calls from the park repository.
+        // To avoid duplicating helper methods, the cart service also has access to the park repository.
+        private readonly IParkRepository _parkRepository;
+        public CartService(ICartRepository repository, IParkRepository parkRepository) {
+            _repository = repository;
+            _parkRepository = parkRepository;
+        }
 
         public async Task<bool> AddBookingToCart(CartDTOs.CreateCartBookingDTO dto) {
             if (dto.CartId == Guid.Empty)
@@ -23,15 +29,34 @@ namespace DirtBikeServer.Services {
             if (dto.BookingInfo.Adults + dto.BookingInfo.Children == 0)
                 throw new ArgumentException("At least one participant is required to create a booking.");
 
+            if (dto.BookingInfo.NumDays > 7 || dto.BookingInfo.NumDays <= 0)
+                throw new ArgumentException("Invalid length.");
+
             var cart = await _repository.GetCartAsync(dto.CartId);
             if (cart == null)
                 return false;
+
+            // query the park repository to ensure that the start
+            var guestLimit = await _parkRepository.GetParkBookingLimit(dto.ParkId);
+            var guestsToAdd = dto.BookingInfo.Adults + dto.BookingInfo.Children;
+
+            // TODO: better logging/return, optimize to use less queries
+            for (int i = 0; i < dto.BookingInfo.NumDays; i++) {
+                var dateToCheck = dto.BookingInfo.StartDate.Date.AddDays(i);
+                var bookingCountForDay = await _parkRepository.GetNumberOfBookingsForDay(dto.ParkId, dateToCheck);
+
+                if(guestLimit < bookingCountForDay + guestsToAdd) {
+                    return false;
+                }
+            }
 
             var booking = new Booking {
                 ParkId = dto.ParkId,
                 Adults = dto.BookingInfo.Adults,
                 Children = dto.BookingInfo.Children,
-                CartID = dto.CartId
+                CartID = dto.CartId,
+                StartDate = dto.BookingInfo.StartDate,
+                NumDays = dto.BookingInfo.NumDays
             };
 
             return await _repository.AddBookingAsync(cart, booking);
