@@ -1,4 +1,5 @@
-﻿using DirtBikeServer.Interfaces;
+﻿using DirtBikeServer.Exceptions;
+using DirtBikeServer.Interfaces;
 using DirtBikeServer.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,7 +32,7 @@ namespace DirtBikeServer.Data {
             var parkToDelete = await query.FirstOrDefaultAsync();
 
             if (parkToDelete == null)
-                return false;
+                throw new ParkNotFoundException(id);
 
             _context.Parks.Remove(parkToDelete);
             return await _context.SaveChangesAsync() > 0;

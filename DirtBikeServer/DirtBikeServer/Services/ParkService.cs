@@ -1,4 +1,5 @@
 ﻿using DirtBikeServer.Data;
+using DirtBikeServer.Exceptions;
 using DirtBikeServer.Interfaces;
 using DirtBikeServer.Models;
 
@@ -41,7 +42,7 @@ namespace DirtBikeServer.Services {
 
             var park = await _repository.GetParkFromIdAsync(dto.ParkId);
             if (park == null) {
-                throw new ArgumentNullException(nameof(dto.ParkId));
+                throw new ParkNotFoundException(dto.ParkId);
             }
 
             if (dto.Description is not null)
@@ -65,7 +66,12 @@ namespace DirtBikeServer.Services {
         public async Task<Park?> GetPark(Guid parkId) {
             if (parkId == Guid.Empty)
                 throw new ArgumentException("Park ID cannot be empty.", nameof(parkId));
-            return await _repository.GetParkFromIdAsync(parkId);
+            var park = await _repository.GetParkFromIdAsync(parkId);
+            if (park == null) {
+                throw new ParkNotFoundException(parkId);
+            }
+            return park;
+
         }
 
         public async Task<List<Park>> GetParks() {
