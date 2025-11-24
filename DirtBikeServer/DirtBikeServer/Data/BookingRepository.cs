@@ -1,4 +1,5 @@
-﻿using DirtBikeServer.Interfaces;
+﻿using DirtBikeServer.Exceptions;
+using DirtBikeServer.Interfaces;
 using DirtBikeServer.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,7 +31,7 @@ namespace DirtBikeServer.Data {
             var bookingToDelete = await query.FirstOrDefaultAsync();
 
             if (bookingToDelete == null)
-                return false;
+                throw new BookingNotFoundException(id);
             _context.Bookings.Remove(bookingToDelete);
             return await _context.SaveChangesAsync() > 0;
         }
