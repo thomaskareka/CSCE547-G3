@@ -1,4 +1,5 @@
 ﻿using DirtBikeServer.Data;
+using DirtBikeServer.Exceptions;
 using DirtBikeServer.Interfaces;
 using DirtBikeServer.Models;
 
@@ -36,7 +37,7 @@ namespace DirtBikeServer.Services {
             if (cart == null)
                 return false;
 
-            // query the park repository to ensure that the start
+            // query the park repository to ensure that the booking fulfills the park limit
             var guestLimit = await _parkRepository.GetParkBookingLimit(dto.ParkId);
             var guestsToAdd = dto.BookingInfo.Adults + dto.BookingInfo.Children;
 
@@ -46,7 +47,7 @@ namespace DirtBikeServer.Services {
                 var bookingCountForDay = await _parkRepository.GetNumberOfBookingsForDay(dto.ParkId, dateToCheck);
 
                 if(guestLimit < bookingCountForDay + guestsToAdd) {
-                    return false;
+                    throw new ParkFullException(dto.ParkId, dateToCheck);
                 }
             }
 

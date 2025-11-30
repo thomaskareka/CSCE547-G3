@@ -47,6 +47,7 @@ namespace DirtBikeServer.Data {
             var query = from booking in park.Bookings
                         where day >= booking.StartDate
                             && day < booking.StartDate.AddDays(booking.NumDays)
+                            && booking.CartID == null
                         select booking.Adults + booking.Children;
 
             return query.Sum();
