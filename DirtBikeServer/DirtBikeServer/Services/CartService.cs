@@ -103,8 +103,53 @@ namespace DirtBikeServer.Services {
             return response;
         }
 
-        public Task<bool> ProcessPayment(CartDTOs.ProcessPaymentDTO dto) {
-            throw new NotImplementedException();
+        public async Task<bool> ProcessPayment(CartDTOs.ProcessPaymentDTO dto) {
+            if (dto.CartId == Guid.Empty)
+                throw new ArgumentException("Cart ID cannot be empty.", nameof(dto.CartId));
+            var searchedCart = await _repository.GetCartAsync(dto.CartId);
+            if (searchedCart == null)
+                throw new CartNotFoundException(dto.CartId);
+            if (searchedCart.Items.Count == 0)
+                throw new ArgumentException("Cart must contain bookings.");
+            if (dto.ExpirationDate < DateTime.UtcNow)
+                throw new InvalidCardException(nameof(dto.ExpirationDate));
+
+            // Use Luhn's algorithm to determine whether the card is valid.
+            var valid = CardValid(dto.CardNumber);
+
+            if (!valid)
+                throw new InvalidCardException("Number");
+
+            // TODO: verify that limits haven't been exceeded since adding to cart
+;           
+            foreach (Booking booking in searchedCart.Items) {
+                booking.CartID = null;
+            }
+            return await _repository.SaveChangesAsync(searchedCart);
+        }
+        private static bool CardValid(string number) {
+            if (string.IsNullOrWhiteSpace(number)) 
+                return false;
+            if (!number.All(char.IsDigit))
+                return false;
+
+            int sum = 0;
+            bool alternate = false;
+
+            for (int i = number.Length - 1; i >= 0; i--) {
+                // subtracting ASCII value results in integer value
+                int n = number[i] - '0';
+
+                if (alternate) {
+                    n *= 2;
+                    if (n > 9)
+                        n -= 9;
+                }
+
+                sum += n;
+                alternate = !alternate;
+            }
+            return (sum % 10 == 0);
         }
 
         public async Task<Cart> RemoveBookingFromCart(CartDTOs.RemoveBookingDTO dto) {

@@ -99,7 +99,15 @@ namespace DirtBikeServer.Controllers {
         }
 
         [HttpPost("/payment")]
-        public async Task<IActionResult> ProcessPayment([FromBody] CartDTOs.ProcessPaymentDTO dto)
-            => Ok(await _service.ProcessPayment(dto));
+        public async Task<IActionResult> ProcessPayment([FromBody] CartDTOs.ProcessPaymentDTO dto) {
+            try {
+                var success = await _service.ProcessPayment(dto);
+                if (success)
+                    return Ok();
+                return Problem();
+            } catch (Exception e) {
+                return Problem(e.Message);
+            }
+        }
     }
 }

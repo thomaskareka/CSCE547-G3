@@ -35,5 +35,10 @@ namespace DirtBikeServer.Data {
         public async Task<bool> SaveCartsAsync() {
             return await _context.SaveChangesAsync() > 0;
         }
+
+        public async Task<bool> SaveChangesAsync(Cart cart) {
+            _context.UpdateRange(cart.Items);
+            return await _context.SaveChangesAsync() > 0;
+        }
     }
 }
