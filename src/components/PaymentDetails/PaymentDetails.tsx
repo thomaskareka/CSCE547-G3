@@ -14,7 +14,7 @@ export default function PaymentDetails() {
         setName(e.target.value);
     }
 
-    const sendCardDetails = () => {
+    const sendCardDetails = async () => {
         console.log("Sent!");
         setCardNumber("");
         setExpDate("");

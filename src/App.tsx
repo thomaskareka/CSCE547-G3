@@ -5,19 +5,34 @@ import ParkDetails from './organisms/ParkDetails/parkDetails';
 import Cart from './organisms/Cart/cart'
 import ParkService from './services/parkService';
 import CartService from './services/cartService';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Homebar from './components/Homebar/homebar';
 import Footer from './components/Footer/footer';
+import { useMemo } from 'react';
+import { CartItem } from './models/cartItem';
 
 function App() {
 
-  const parkService = new ParkService();
-  const cartService = new CartService();
-  const [cart, setCart ] = useState(cartService.loadCart());
+  const parkService = useMemo(() => new ParkService(), []);
+  const cartService = useMemo(() => new CartService(), []);
+  const [cart, setCart] = useState<CartItem[]>([]);
 
-  const handleChange = () => {
-    setCart(cartService.loadCart());
+  const handleChange = async () => {
+    const maybe = cartService.loadCart();
+    const resolved = (maybe instanceof Promise) ? await maybe : maybe;
+    setCart(resolved ?? []);
   }
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      const maybe = cartService.loadCart();
+      const resolved = (maybe instanceof Promise) ? await maybe : maybe;
+      if (mounted) setCart(resolved ?? []);
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   return (
       <div className="App">

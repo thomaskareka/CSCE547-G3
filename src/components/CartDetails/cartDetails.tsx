@@ -1,7 +1,7 @@
 import CartService from "../../services/cartService";
 import CartCard from "../cartCard/cartCard";
 import { CartItem } from '../../models/cartItem';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./cartDetails.css"
 import PaymentDetails from "../PaymentDetails/PaymentDetails";
 
@@ -14,23 +14,37 @@ export default function CartDetails(props: CartDetailsProps) {
 	const { cartService, handleDelete } = props;
 
     //Pulling from local storage as source of truth
-    const [cart, setCart] = useState(cartService.loadCart());
+    const [cart, setCart] = useState<CartItem[]>([]);
     const [paymentOption, setPaymentOption] = useState("PAY_AT_PARK");
+
+    useEffect(() => {
+    const load = async () => {
+        const result = await cartService.loadCart();
+        setCart(result ?? []);
+    };
+    load();
+    }, []);
 	
-    const updateCartItem = (newCartItem: CartItem) => {
-        const item = cart.find((item: CartItem) => item.park.id === newCartItem.park.id);
-        cartService.updateCart(item, newCartItem);
-        setCart(cartService.loadCart());
+
+    const updateCartItem = async (newCartItem: CartItem) => {
+        const existing = cart.find((ci) => ci.park.id === newCartItem.park.id);
+        cartService.updateCart(existing ?? newCartItem, newCartItem);
+        const res = cartService.loadCart();
+        const resolved = res instanceof Promise ? await res : res;
+        setCart(resolved ?? []);
     }
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPaymentOption(e.target.value);
-    }
+        const v = e.target.value as "PAY_AT_PARK" | "PAY_NOW";
+        setPaymentOption(v);
+        }
 
-    const deleteCartItem = (item: CartItem) => {
+    const deleteCartItem = async (item: CartItem) => {
         cartService.removeItemFromCart(item);
         handleDelete();
-        setCart(cartService.loadCart());
+        const res = cartService.loadCart();
+        const resolved = res instanceof Promise ? await res : res;
+        setCart(resolved ?? []);
     }
 
     const getTaxPrice = () => {

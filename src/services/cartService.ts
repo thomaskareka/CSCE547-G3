@@ -1,55 +1,93 @@
-import { CartItem } from "../models/cartItem";
-
+import { UUID } from "crypto";
+import { CartItem, Booking } from "../models/cartItem";
+import IPark from "../models/park";
 export default class CartService {
     private items: CartItem[];
 
     private CART_KEY = 'rideFinderExampleApp'
+    private KEY_NAME = 'cart_key';
 
+    public CartItemToBooking(item: CartItem, cart_id: UUID) : Booking {
+        return {
+            adults: item.numAdults,
+            children: item.numKids,
+            cartId: cart_id,
+            parkId: item.park.id as UUID,
+            numDays: item.numDays,
+            startDate: new Date(Date.now())
+        }
+    }
 
+    public BookingToCartItem(item: Booking, park: IPark) : CartItem {
+        return {
+            park: park,
+            numDays: item.numDays,
+            numAdults: item.adults,
+            numKids: item.children
+        }
+    }
+
+    private GetCartId(): string {
+        let id = localStorage.getItem(this.KEY_NAME);
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem(this.KEY_NAME, id);
+            localStorage.setItem(id, JSON.stringify([]));
+        }
+        return id;
+    }
     //loadCart will be our public facing method, all invocations of getCart should be internal so we only have one source of truth
 
-    loadCart = (): CartItem[] => {
-        return JSON.parse(localStorage.getItem(this.CART_KEY));
+    loadCart = async (): Promise<CartItem[]> => {
+        const id = this.GetCartId();
+        console.log(id);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Cart/${id}`);
+        const data = await res.json();
+
+        var items = data.outCart.items
+        const out: CartItem[] = items.map((item: any) => {
+            return this.BookingToCartItem(item, item.park);
+        });
+        return out;
     }
 
-    addItemToCart = (newItem: CartItem) => {
-        const cart = this.loadCart() || [];
-        const itemInCart = cart.findIndex((item: CartItem) => item.park.id === newItem.park.id);
-        if(itemInCart > -1) {
-            this.updateCart(cart[itemInCart], newItem);
-        }
-        cart.push(newItem);
-        this.save(cart);
+    addItemToCart = async (newItem: CartItem): Promise<CartItem[]> => {
+        const id = await this.GetCartId();
+
+        const booking = this.CartItemToBooking(newItem, id as UUID)
+
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/add_booking`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                cartId: id,
+                parkId: booking.parkId,
+                bookingInfo: {
+                    adults: booking.adults,
+                    children: booking.children,
+                    startDate: new Date(Date.now()),
+                    numDays: booking.numDays
+                }
+            })
+        });
+
+        return this.loadCart();
     }
 
-    removeItemFromCart = (remItem: CartItem) => {
-        const cart = this.loadCart();
-        
-        const result = cart.filter((val: CartItem) => val.park.id !== remItem.park.id)
-        this.save(result);
-    }
+    // removeItemFromCart = async (remItem: CartItem): Promise<CartItem[]> => {
+    //     const cart = await this.loadCart();
+    //     const result = cart.filter((val: CartItem) => val.park.id !== remItem.park.id);
+    //     return this.saveCartRaw(result);
+    // }
 
-    updateCart(oldItem: CartItem, newItem: CartItem) {
-        const cart = this.loadCart();
-        if(oldItem.park.id !== newItem.park.id) {
-            this.save(cart);
-        }
-
-        //Update with new item first and then old item if it doesn't exist
-        const combinedItem = {
-            park: newItem.park || oldItem.park,
-            numDays: newItem.numDays || oldItem.numDays,
-            numAdults: newItem.numAdults || oldItem.numAdults,
-            numKids: newItem.numKids || oldItem.numKids
-        };
-        const index = cart.findIndex((val: CartItem) => val.park.id === combinedItem.park.id);
-        if(index > -1) {
-            cart[index] = combinedItem;
-        }
-        this.save(cart);
+    updateCart = async (oldItem: CartItem, newItem: CartItem): Promise<CartItem[]> => {
+        return
     }
 
     private save(cart: CartItem[]) {
-        localStorage.setItem(this.CART_KEY, JSON.stringify(cart));
+        var id = localStorage.getItem("cart_key");
+        localStorage.setItem(id, JSON.stringify(cart));
     }
 }
