@@ -76,11 +76,10 @@ export default class CartService {
         return this.loadCart();
     }
 
-    // removeItemFromCart = async (remItem: CartItem): Promise<CartItem[]> => {
-    //     const cart = await this.loadCart();
-    //     const result = cart.filter((val: CartItem) => val.park.id !== remItem.park.id);
-    //     return this.saveCartRaw(result);
-    // }
+    removeItemFromCart = async (remItem: CartItem): Promise<CartItem[]> => {
+        const cart = await this.loadCart();
+        return cart;
+    }
 
     updateCart = async (oldItem: CartItem, newItem: CartItem): Promise<CartItem[]> => {
         return

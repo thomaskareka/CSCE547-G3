@@ -15,7 +15,24 @@ export default function PaymentDetails() {
     }
 
     const sendCardDetails = async () => {
-        console.log("Sent!");
+        const cartId = localStorage.getItem("cart_key");
+
+        const data = {
+            cartId: cartId ?? "",
+            cardNumber: cardNumber,
+            expirationDate: new Date(expDate).toISOString(),
+            cardHolderName: name,
+            cvc: 111
+        }
+
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/payment`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+        });
+        
         setCardNumber("");
         setExpDate("");
         setName("");
