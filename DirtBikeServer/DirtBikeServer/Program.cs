@@ -38,6 +38,14 @@ namespace DirtBikeServer
             builder.Services.AddControllers().AddJsonOptions(o =>
                 o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
 
+            // add CORS to allow requests from react frontend
+            builder.Services.AddCors(options => {
+                options.AddPolicy("ReactDev", policy =>
+                    policy.AllowAnyOrigin()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod());
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -46,6 +54,7 @@ namespace DirtBikeServer
                 app.MapOpenApi();
                 app.UseSwagger();
                 app.UseSwaggerUI();
+                app.UseCors("ReactDev");
             }
 
             app.UseHttpsRedirection();

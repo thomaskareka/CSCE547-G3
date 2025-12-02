@@ -13,3 +13,14 @@ export default interface IPark {
     adultPrice: number;
     childPrice: number;
 }
+
+export interface ApiPark {
+    id: string;
+    name: string;
+    location: string;
+    description: string | null;
+    adultPrice: number;
+    childPrice: number;
+    guestLimit: number;
+    bookings?: Review[];
+}

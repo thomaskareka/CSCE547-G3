@@ -1,25 +1,78 @@
 import IPark from "../models/park";
+import Review from "../models/review";
+import { ApiPark } from "../models/park";
+import User from "../models/user";
 
 export default class ParkService {
 
     public parks: IPark[] = [];
 
+    // getAllParks: () => Promise<IPark[]> = async () => {
+    //     const parks = mockData.map((val) => JSON.parse(JSON.stringify(val)))
+    //     return new Promise((res) => {
+    //         setTimeout(() => {
+    //             res(parks)
+    //         }, 300);
+    //     });
+    // };
+
     getAllParks: () => Promise<IPark[]> = async () => {
-        const parks = mockData.map((val) => JSON.parse(JSON.stringify(val)))
-        return new Promise((res) => {
-            setTimeout(() => {
-                res(parks)
-            }, 300);
-        });
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Park`);
+        const data = await res.json();
+
+        var final = data.map(mapPark);
+        console.log(final);
+        return final;
     };
 
+    // getParkById: (id: string) => Promise<IPark> = async (id: string) => {
+    //     const parks = mockData.map((val) => JSON.parse(JSON.stringify(val)));
+    //     return new Promise((res) => {
+    //         setTimeout(() => {
+    //             res(parks.find((park) => park.id === id))
+    //         }, 500)
+    //     })
+    // }
+
     getParkById: (id: string) => Promise<IPark> = async (id: string) => {
-        const parks = mockData.map((val) => JSON.parse(JSON.stringify(val)));
-        return new Promise((res) => {
-            setTimeout(() => {
-                res(parks.find((park) => park.id === id))
-            }, 500)
-        })
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/Park/${id}`);
+        const data = await res.json();
+
+        var final = mapPark(data);
+        console.log(final);
+        return final;
+    }
+}
+
+function mapPark(park: ApiPark): IPark {
+    return {
+        id: park.id,
+        parkName: park.name,
+        location: park.location,
+        description: park.description,
+        adultPrice: park.adultPrice,
+        childPrice: park.childPrice,
+        imageUrl: `https://placehold.co/600x400/334155/FFF?text=${encodeURIComponent(park.name)}`,
+        reviews: [getSampleReview()]
+    }
+}
+
+function getSampleReview() : Review {
+    return {
+        author: getSampleUser(),
+        rating: 5,
+        review: "Perfect",
+        dateWritten: new Date(Date.now()),
+        dateVisited: new Date(Date.now())
+    }
+}
+
+function getSampleUser() : User {
+    return {
+        id: crypto.randomUUID(),
+        displayName: "John",
+        fullName: "John Doe",
+        dateOfBirth: new Date("1990-01-01")
     }
 }
 
