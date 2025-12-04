@@ -8,16 +8,28 @@ namespace DirtBikeServer.Services {
         private readonly IParkRepository _repository;
         public ParkService(IParkRepository repository) => _repository = repository;
 
-        public Task<bool> AddGuestLimitToPark(ParkDTOs.GuestDTO dto) {
-            if (dto.ParkId == Guid.Empty)
-                throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
+    public async Task<bool> AddGuestLimitToPark(ParkDTOs.GuestDTO dto)
+    {
+      if (dto.ParkId == Guid.Empty)
+        throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
-            if (dto.NumberOfGuests <= 0)
-                throw new ArgumentException("Guest limit must be greater than zero.", nameof(dto.NumberOfGuests));
-            throw new NotImplementedException();
-        }
+      if (dto.NumberOfGuests <= 0)
+        throw new ArgumentException("Guest limit must be greater than zero.", nameof(dto.NumberOfGuests));
 
-        public async Task<bool> AddPark(ParkDTOs.CreateParkDTO dto) {
+      // Get the park from the repository
+      var park = await _repository.GetParkFromIdAsync(dto.ParkId);
+      if (park == null)
+        throw new ParkNotFoundException(dto.ParkId);
+
+      // Actually set the limit
+      park.GuestLimit = dto.NumberOfGuests;
+
+      // Save changes
+      return await _repository.UpdateParkAsync(park);
+    }
+
+
+    public async Task<bool> AddPark(ParkDTOs.CreateParkDTO dto) {
             if (string.IsNullOrWhiteSpace(dto.Name))
                 throw new ArgumentException("Park name cannot be empty.", nameof(dto.Name));
 
