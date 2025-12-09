@@ -17,6 +17,12 @@ namespace DirtBikeServer.Data {
             public int NumberOfGuests { get; set; }
         }
 
+        public class RemoveGuestDTO {
+            public Guid ParkId { get; set; }
+            public int NumberOfGuests { get; set; }
+            public DateTime Date { get; set; }
+        }
+
         public class EditParkDTO {
             public Guid ParkId { get; set; }
             public String? Description { get; set; }

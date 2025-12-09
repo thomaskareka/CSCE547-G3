@@ -105,7 +105,7 @@ namespace DirtBikeServer.Controllers {
         }
         
         [HttpDelete("/guests")]
-        public async Task<IActionResult> RemoveGuestsFromPark([FromBody] ParkDTOs.GuestDTO dto) {
+        public async Task<IActionResult> RemoveGuestsFromPark([FromBody] ParkDTOs.RemoveGuestDTO dto) {
             try {
                 var success = await _service.RemoveGuestsFromPark(dto);
                 if (success) {

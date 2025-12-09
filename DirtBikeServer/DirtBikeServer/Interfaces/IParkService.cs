@@ -8,7 +8,7 @@ namespace DirtBikeServer.Interfaces {
         Task<Park?> GetPark(Guid parkId);
         Task<List<Park>> GetParks();
         Task<bool> AddGuestLimitToPark(ParkDTOs.GuestDTO dto);
-        Task<bool> RemoveGuestsFromPark(ParkDTOs.GuestDTO dto);
+        Task<bool> RemoveGuestsFromPark(ParkDTOs.RemoveGuestDTO dto);
         Task<bool> EditPark(ParkDTOs.EditParkDTO dto);
     }
 }

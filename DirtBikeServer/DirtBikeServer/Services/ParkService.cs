@@ -2,6 +2,8 @@
 using DirtBikeServer.Exceptions;
 using DirtBikeServer.Interfaces;
 using DirtBikeServer.Models;
+using System.Diagnostics;
+using System.Runtime.Intrinsics.Arm;
 
 namespace DirtBikeServer.Services {
     public class ParkService : IParkService {
@@ -90,14 +92,65 @@ namespace DirtBikeServer.Services {
             return await _repository.GetParksAsync();
         }
 
-        public Task<bool> RemoveGuestsFromPark(ParkDTOs.GuestDTO dto) {
+        public async Task<bool> RemoveGuestsFromPark(ParkDTOs.RemoveGuestDTO dto) {
             if (dto.ParkId == Guid.Empty)
                 throw new ArgumentException("Park ID cannot be empty.", nameof(dto.ParkId));
 
             if (dto.NumberOfGuests <= 0)
                 throw new ArgumentException("Number of guests to remove must be greater than zero.", nameof(dto.NumberOfGuests));
 
-            throw new NotImplementedException();
+            var park = await _repository.GetParkFromIdAsync(dto.ParkId);
+            if (park == null) {
+                throw new ParkNotFoundException(dto.ParkId);
+            }
+            // get all valid bookings with that date
+
+            var bookings = (from booking in park.Bookings
+                           where dto.Date >= booking.StartDate
+                                && dto.Date < booking.StartDate.AddDays(booking.NumDays)
+                                && booking.CartID == null
+                           select booking)
+                           .OrderBy(b => b.StartDate)
+                           .ToList();
+
+            int totalGuests = bookings.Sum(b => b.Adults + b.Children);
+
+            if (dto.NumberOfGuests > totalGuests) {
+                throw new ArgumentException($"Number of guests to remove cannot be larger than the number of present guests. ({totalGuests})");
+            }
+            //iterate through and remove bookings until target is met
+            //delete a booking if it has no people
+            int remainingToRemove = dto.NumberOfGuests;
+            var bookingsToDelete = new List<Booking>();
+
+            foreach (var booking in bookings) {
+                if (remainingToRemove <= 0)
+                    break;
+
+                int availablePeople = booking.Adults + booking.Children;
+                if (availablePeople == 0)
+                    continue;
+
+                int removedChildren = Math.Min(booking.Children, remainingToRemove);
+                booking.Children -= removedChildren;
+                remainingToRemove -= removedChildren;
+
+                if (remainingToRemove > 0) {
+                    int removedAdults = Math.Min(booking.Adults, remainingToRemove);
+                    booking.Adults -= removedAdults;
+                    remainingToRemove -= removedAdults;
+                }
+
+                if (booking.Adults + booking.Children == 0) {
+                    bookingsToDelete.Add(booking);
+                }
+            }
+
+            foreach (var booking in bookingsToDelete) {
+                park.Bookings.Remove(booking);
+            }
+
+            return await _repository.UpdateParkAsync(park);
         }
 
         public async Task<bool> RemovePark(Guid parkId) {
